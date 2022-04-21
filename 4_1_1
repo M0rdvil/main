@@ -1,0 +1,201 @@
+//MAIN.CPP
+
+#include <iostream>
+#include "cl_application.h"
+using namespace std;
+int main()
+{
+	cl_application ob_cl_application(nullptr);
+	ob_cl_application.bild_tree_objects();  // построение дерева объектов
+	return ob_cl_application.exec_app();    // запуск системы
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//BASE.CPP
+
+#include "base.h"
+
+base::base(base* head, string name)
+{
+	this->head = head;
+	this->name = name;
+	if (head!=nullptr)
+	{
+		head->child.push_back(this);
+	}
+}
+
+base::~base()
+{
+	for ( int i = 0; i < child.size(); i++)
+	{
+		delete child[i];
+	}
+}
+
+void base::change_head(base* head)			
+{
+	if (head!=nullptr && this->head!=nullptr)
+	{
+		base* temp = this->head;
+		head->child.push_back(this);
+		this->head = head;
+		for (int i = 0; i < this->head->child.size(); i++)
+		{
+			if (head == this->head->child[i])
+			{
+				delete this->head->child[i];
+			}
+		}
+	
+	}
+}
+
+void base::set_name(string name)
+{
+	this->name = name;
+}
+
+string base::get_name()
+{
+	return name;
+}
+
+base* base::get_head()
+{
+	return head;
+}
+
+void base::print()
+{
+	if (this->child.size() != 0)
+	{
+		cout << name;
+		for (int i = 0; i < child.size(); i++)
+		{
+			cout << " " << child[i]->name;
+		}
+		cout << endl;
+	}
+
+	for (int  i = 0; i < child.size(); i++)
+	{
+		child[i]->print();
+
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+//BASE.H
+
+#ifndef BASE_H
+#define BASE_H
+#include <iostream>
+#include <vector>
+using namespace std;
+class base
+{
+private:
+	string name;
+	base* head;
+	vector <base*> child;
+
+
+public:
+	base(base* head, string name = " ");      //параметризированный конструктор с параметрами: указатель на головной объект в дереве иерархии и наименование объекта  (имеет значение по умолчанию);
+	~base();
+	void set_name(string name);//	                		     //метод определения имени объекта;			
+	string get_name();//											 		 //метод получения имени объекта;						
+	void change_head(base* head);							 //метод переопределения головного объекта для текущего в дереве иерархии;
+	base* get_head();//												 //метод получения указателя на головной объект текущего объекта.
+	void print();																 //метод вывода наименований объектов в дереве иерархии слева направо и сверху вниз;
+};
+
+
+#endif
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//CL_APPLICATION.CPP
+
+#include "cl_application.h"
+
+cl_application::cl_application(base* head, string name) :base(head, name)
+{
+
+}
+
+void cl_application::bild_tree_objects()
+{
+	string name_root;
+	cin >> name_root;
+	set_name(name_root);
+	base* time_parent = this;
+	base* time_child = nullptr;
+	string name_parent;
+	string name_child;
+	while (true)
+	{
+		cin >> name_parent >> name_child;
+		if (name_parent == name_child)
+		{
+			break;
+		}
+		
+		if (name_parent == time_parent->get_name())
+		{
+			time_child = new object(time_parent, name_child);
+		}
+		else
+		{
+			time_parent = time_child;
+			time_child = new object(time_parent, name_child);
+		}
+	}
+}
+
+int cl_application::exec_app()
+{
+	cout << get_name() << endl;
+	print();
+	return 0;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+//CP_APPLICATION.H
+
+#include "base.h"
+#include "object.h"
+
+class cl_application :public base
+{
+private:
+
+public:
+	cl_application(base* head, string  name = " ");
+	void bild_tree_objects();
+	int exec_app();
+};
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+//OBJECT.CPP
+
+#include "object.h"
+object::object(base* head, string name):base(head, name)
+{
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//OBJECT.H
+
+#include "base.h"
+
+class object:public base
+{
+public: 
+	object(base* head, string name);
+};
+
